@@ -1,0 +1,72 @@
+<FlatButton@ButtonBehavior+Label>:
+    font_size: 14
+
+
+<OperatorWindow>:
+    id: main_win
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    BoxLayout:
+        id: header
+        size_hint_y: None
+        height: 40
+        canvas.before:
+            Color:
+                rgba: (.06, .55, .55, 1)
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        Label:
+            text: 'Statistic Board'
+            size_hint_x: .9
+            bold: True
+            color: (1,1,1,1)
+        FlatButton:
+            id: user
+            text: 'Jack'
+            color: (1,1,1,1)
+    BoxLayout:
+        id: current
+        size_hint_y: None
+        height: 50
+        canvas.before:
+            Color:
+                rgba: (1,1,1,1)
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        Button:
+            text: 'Our Vehicles'
+            background_normal: ''
+            background_color: (.06, .32, .32, 1)
+            size_hint_x: .4
+        Button:
+            text: 'data'
+            background_normal: ''
+            background_color: (.06, .7, .7, 1)
+            size_hint_x: .6
+
+    BoxLayout:
+        BoxLayout:
+            id: product_details
+            orientation: "vertical"
+            size_hint_x: .8
+            BoxLayout:
+                id: labels
+                size_hint_y: None
+                height: 40
+                canvas.before:
+                    Color:
+                        rgba: (.06, .45, .45, 1)
+        BoxLayout:
+            id: preview
+            orientation: "vertical"
+            size_hint_x: .8
+
+
+
