@@ -236,15 +236,31 @@ class DataStatistic:
             print("己方传球成功率： ", self.ourPassSuccessRate)
             print("对方传球成功率： ", self.theirPassSuccessRate)
             self.time = 0
+    #输出到txt文件
+    def output(self):
+        with open('data.txt', 'w') as f:
+            f.write(str(self.ourHoldingRate) + "\n")
+            f.write(str(self.theirHoldingRate) + "\n")
+            f.write(str(self.ourShootNum) + "\n")
+            f.write(str(self.theirShootNum) + "\n")
+            f.write(str(self.ourPassingNum) + "\n")
+            f.write(str(self.theirPassingNum) + "\n")
+            f.write(str(self.ourLosingPossessionNum) + "\n")
+            f.write(str(self.theirLosingPossessionNum) + "\n")
+            f.write(str(self.ourPassSuccessRate) + "\n")
+            f.write(str(self.theirPassSuccessRate) + "\n")
 
 if __name__ == "__main__":
     JackData = DataStatistic()
-    while True:
-        # receive data from server
-        recv_data = udp_socket.recvfrom(4096)
-        vd.ParseFromString(recv_data[0])
-        JackData.update(vd)  # 每一帧数据更新
-        JackData.runningStatistic()
+    try:
+        while True:
+            # receive data from server
+            recv_data = udp_socket.recvfrom(4096)
+            vd.ParseFromString(recv_data[0])
+            JackData.update(vd)  # 每一帧数据更新
+            JackData.runningStatistic()
+    except KeyboardInterrupt:
+        JackData.output()
 
 
 
