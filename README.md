@@ -7,11 +7,11 @@
 python3.8 + kivy2.3.0，建议用anaconda管理环境，创建虚拟环境运行
 
 ### 使用方式：
-比赛开始时进行数据统计，在终端运行： \\
-python3 statistic.py \\
-按下*ctrl+c*停止运行会向data.txt写入数据 \\
-之后在终端输入: \\
-python3 TechnicalBoard.py \\
+比赛开始时进行数据统计，在终端运行： \
+python3 statistic.py \
+按下*ctrl+c*停止运行会向data.txt写入数据 \
+之后在终端输入: \
+python3 TechnicalBoard.py \
 激活图形化界面，可以查看我方和敌方的总体数据和我方单个机器人的数据
 ### 图形化界面
 ![截图 2024-03-16 14-48-13](https://github.com/NorwegianSmokedSalmon/statistic/assets/131785818/f0762354-07dd-411e-8ffd-8d91978aed32)
