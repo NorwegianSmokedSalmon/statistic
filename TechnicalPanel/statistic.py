@@ -27,8 +27,8 @@ class DataStatistic:
         self.noHoldingTime = 0
         self.ourShootNum = 0
         self.theirShootNum = 0
-        self.robotNum = 8
-        self.totalRobotNum = 16
+        self.robotNum = 12
+        self.totalRobotNum = 24
         self.blueRobots = []
         self.yellowRobots = []
         self.ball = Ball(0, 0, 0, 0)
@@ -50,7 +50,7 @@ class DataStatistic:
         self.restrictedAreaWidth = 1800
         self.restrictedAreaHeight = 1800
         self.shootAngleThreshold = 1
-        self.shootVelocityThreshold = 100
+        self.shootVelocityThreshold = 30
 
         #传球相关的数据
         self.ourPassingNum = 0
@@ -71,6 +71,13 @@ class DataStatistic:
         #传球失误即丢失球权的数据
         self.ourLosingPossessionNum = 0
         self.theirLosingPossessionNum = 0
+
+        #我方每辆机器人的数据
+        self.ourRobotData = []
+        for i in range(self.robotNum):
+            self.ourRobotData.append([0, 0, 0.0, 0.0, "no"])
+
+
         #初始化机器人
         for i in range(self.robotNum):
             self.blueRobots.append(Robot(0, 0, 0, 0, 0, False, BLUE))
@@ -103,22 +110,20 @@ class DataStatistic:
                 self.theirHolding = False
                 self.ourHoldingNum = i
                 self.theirHoldingNum = -1
-                print("our holding!!!!!!!!!!!!!!!!!!!!!!!")
             if yellow.valid and theirDis < self.holdingThreshold and abs(ballToThem - theirDir) < 1.5:
                 self.ballIsHold = True
                 self.ourHolding = False
                 self.theirHolding = True
                 self.theirHoldingNum = i
                 self.ourHoldingNum = -1
-                print("their holding!!!!!!!!!!!!!!!!!!!!")
 
-    # 确认控球的车号，将我方车辆映射到1 ~ 8，对方车辆映射到9 ~ 16
+    # 确认控球的车号，将我方车辆映射到1 ~ 12，对方车辆映射到13 ~ 24
     def confirmHoldingNum(self):
         holdingNum = -1
         if self.ourHoldingNum > 0:
             holdingNum = self.ourHoldingNum
         elif self.theirHoldingNum > 0:
-            holdingNum = self.theirHoldingNum + 8
+            holdingNum = self.theirHoldingNum + 12
         return holdingNum
 
     # 连续一定帧数某辆车满足judgeHolding，被判断为处于控球状态，根据长度添加控球时间
@@ -135,9 +140,9 @@ class DataStatistic:
                         list.append(p)
                     elif p != last:
                         if len(list) >= self.holdingFpsThreshold:
-                            if list[0] <= 8:
+                            if list[0] <= 12:
                                 self.ourHoldingTime += len(list)
-                            elif list[0] > 8:
+                            elif list[0] > 12:
                                 self.theirHoldingTime += len(list)
                         list.clear()
                 last = p
@@ -151,16 +156,20 @@ class DataStatistic:
 
     #球是否在禁区里面
     def inRestrictedZone(self):
-        if abs(self.ball.x) < self.restrictedAreaWidth and abs(self.ball.y) > self.groundWidth - self.restrictedAreaHeight:
+        if abs(self.ball.x) < self.groundWidth and abs(self.ball.x) > (self.groundWidth - self.restrictedAreaHeight) and abs(self.ball.y) < self.restrictedAreaHeight:
             return True
 
     #在我方禁区
     def inOurRestrictedZone(self):
-        return (self.ball.x < 0) and self.inRestrictedZone()
+        if (self.ball.x < 0) and self.inRestrictedZone():
+            return True
+        return False
 
     #在对方禁区
     def intheirRestrictedZone(self):
-        return (self.ball.x > 0) and self.inRestrictedZone()
+        if (self.ball.x > 0) and self.inRestrictedZone():
+            return True
+        return False
 
     #获取移除-1的控球集合,同时去除控球集合中局部连续的重复元素，只留一个
     def getRemovingNoholdingAndRepeatingNumList(self):
@@ -177,18 +186,20 @@ class DataStatistic:
     def judgePassAndLosingPossesseion(self):
         stateList = self.getRemovingNoholdingAndRepeatingNumList()
         if len(stateList) > 0:
-            for i in range (len(stateList) - 1):
+            for i in range(len(stateList) - 1):
                 #我方传球成功
-                if abs(stateList[i + 1] - stateList[i]) < 8 and abs(stateList[i + 1] - stateList[i]) > 0 and stateList[i] <=8:
+                if abs(stateList[i + 1] - stateList[i]) < 12 and abs(stateList[i + 1] - stateList[i]) > 0 and stateList[i] <=12:
                     self.ourPassingNum += 1
+                    self.ourRobotData[stateList[i] - 1][0] += 1
                 #我方传球失误
-                elif abs(stateList[i + 1] - stateList[i]) >= 8 and stateList[i] <= 8:
+                elif abs(stateList[i + 1] - stateList[i]) >= 12 and stateList[i] <= 12:
                     self.ourLosingPossessionNum += 1
+                    self.ourRobotData[stateList[i] - 1][1] += 1
                 #对方传球成功
-                elif abs(stateList[i + 1] - stateList[i]) < 8 and abs(stateList[i + 1] - stateList[i]) > 0 and stateList[i] > 8:
+                elif abs(stateList[i + 1] - stateList[i]) < 12 and abs(stateList[i + 1] - stateList[i]) > 0 and stateList[i] > 12:
                     self.theirPassingNum += 1
                 #对方传球失误
-                elif abs(stateList[i + 1] - stateList[i]) >= 8 and stateList[i] > 8:
+                elif abs(stateList[i + 1] - stateList[i]) >= 12 and stateList[i] > 12:
                     self.theirLosingPossessionNum += 1
 
     #判断是否出现射门，通过球是否在禁区内、球速度方向是否朝向球门方向、球速是否大于一定阈值来判断是否为射门
@@ -202,6 +213,7 @@ class DataStatistic:
 
     #生成控球率、传球成功率信息
     def generateInfo(self):
+        #总数据
         if self.ourHoldingTime + self.theirHoldingTime > 0:
             self.ourHoldingRate = self.ourHoldingTime / (self.ourHoldingTime + self.theirHoldingTime)
             self.theirHoldingRate = self.theirHoldingTime / (self.ourHoldingTime + self.theirHoldingTime)
@@ -209,7 +221,28 @@ class DataStatistic:
             self.ourPassSuccessRate = self.ourPassingNum / (self.ourPassingNum + self.ourLosingPossessionNum)
         if (self.theirPassingNum + self.theirLosingPossessionNum) > 0:
             self.theirPassSuccessRate = self.theirPassingNum / (self.theirPassingNum + self.theirLosingPossessionNum)
+        #每辆机器人的数据
+        scores = []
+        for i in range(len(self.ourRobotData)):
+            if self.ourRobotData[i][0] + self.ourRobotData[i][1] > 0:
+                self.ourRobotData[i][2] = self.ourRobotData[i][0] / (self.ourRobotData[i][0] + self.ourRobotData[i][1])
+                self.ourRobotData[i][3] = self.ourRobotData[i][1] / (self.ourRobotData[i][0] + self.ourRobotData[i][1])
+                #判断MVP
+            score = self.ourRobotData[i][0] * self.ourRobotData[i][2] - self.ourRobotData[i][1] * self.ourRobotData[i][3]
+            scores.append(score)
+        maxScore = max(scores)
+        maxIndex = scores.index(maxScore)
+        self.ourRobotData[maxIndex][4] = "yes"
 
+
+    #数据滤波，待进行优化
+    def dataFliter(self):
+        self.ourShootNum = round(self.ourShootNum / 5)
+        self.theirShootNum = round(self.theirShootNum / 5)
+        self.ourPassingNum = round(self.ourPassingNum / 5)
+        self.theirPassingNum = round(self.theirPassingNum / 5)
+        self.ourLosingPossessionNum = round(self.ourLosingPossessionNum / 5)
+        self.theirLosingPossessionNum = round(self.theirLosingPossessionNum / 5)
     #核心函数，启动统计的运行
     def runningStatistic(self):
         self.judgeHoldingNum() #判断更新每一帧控球的车号
@@ -218,7 +251,8 @@ class DataStatistic:
         self.confirmHolding() #根据控球帧数生成并添加控球时间
         self.judgePassAndLosingPossesseion() #判断是否出现成功传球与传球失误导致丢失球权
         self.judgeShooting() #判断是否出现射门
-        self.generateInfo() #生成控球率、传球成功率信息
+        self.generateInfo()  # 生成控球率、传球成功率信息
+        #self.dataFliter() #数据滤波
         self.printInfo() #每隔一段时间，打印信息
 
     #每隔一段时间，打印信息
@@ -226,29 +260,37 @@ class DataStatistic:
         self.time += 1
         if self.time >= self.printInterval:
             print("己方控球率： ", self.ourHoldingRate)
-            print("对方控球率： ", self.theirHoldingRate)
-            print("己方射门次数： ", self.ourShootNum)
-            print("对方射门次数： ", self.theirShootNum)
             print("己方传球次数： ", self.ourPassingNum)
-            print("对方传球次数： ", self.theirPassingNum)
             print("己方丢球次数： ", self.ourLosingPossessionNum)
-            print("对方丢球次数： ", self.theirLosingPossessionNum)
+            print("己方射门次数： ", self.ourShootNum)
             print("己方传球成功率： ", self.ourPassSuccessRate)
+            print("对方控球率： ", self.theirHoldingRate)
+            print("对方传球次数： ", self.theirPassingNum)
+            print("对方丢球次数： ", self.theirLosingPossessionNum)
+            print("对方射门次数： ", self.theirShootNum)
             print("对方传球成功率： ", self.theirPassSuccessRate)
             self.time = 0
     #输出到txt文件
     def output(self):
+        ourdata = []
+        ourdata.append(self.ourHoldingRate)
+        ourdata.append(self.ourPassingNum)
+        ourdata.append(self.ourLosingPossessionNum)
+        ourdata.append(self.ourShootNum)
+        ourdata.append(self.ourPassSuccessRate)
+        theirdata = []
+        theirdata.append(self.theirHoldingRate)
+        theirdata.append(self.theirPassingNum)
+        theirdata.append(self.theirLosingPossessionNum)
+        theirdata.append(self.theirShootNum)
+        theirdata.append(self.theirPassSuccessRate)
+
         with open('data.txt', 'w') as f:
-            f.write(str(self.ourHoldingRate) + "\n")
-            f.write(str(self.theirHoldingRate) + "\n")
-            f.write(str(self.ourShootNum) + "\n")
-            f.write(str(self.theirShootNum) + "\n")
-            f.write(str(self.ourPassingNum) + "\n")
-            f.write(str(self.theirPassingNum) + "\n")
-            f.write(str(self.ourLosingPossessionNum) + "\n")
-            f.write(str(self.theirLosingPossessionNum) + "\n")
-            f.write(str(self.ourPassSuccessRate) + "\n")
-            f.write(str(self.theirPassSuccessRate) + "\n")
+            f.write(str(ourdata) + "\n")
+            f.write(str(theirdata) + "\n")
+            for i in range(len(self.ourRobotData)):
+                f.write(str(self.ourRobotData[i]) + "\n")
+
 
 if __name__ == "__main__":
     JackData = DataStatistic()
@@ -260,6 +302,7 @@ if __name__ == "__main__":
             JackData.update(vd)  # 每一帧数据更新
             JackData.runningStatistic()
     except KeyboardInterrupt:
+        JackData.dataFliter()
         JackData.output()
 
 
